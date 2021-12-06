@@ -53,7 +53,7 @@ public class Executor
 		
 		/* run a game in synchronous mode: game waits until controllers respond. */
 		System.out.println("STARTER PACMAN vs starter GHOSTS");
-		//exec.runGame(new CS4096PacMan(), new StarterGhosts(), visual,delay);
+		exec.runGame(new CS4096PacMan(), new StarterGhosts(), visual,delay);
 
 		/* run multiple games in batch mode - good for testing. */
 		
@@ -79,7 +79,7 @@ public class Executor
 		
 //		exec.runGameTimed(new MyPacMan(),new AggressiveGhosts(),visual);
 //		exec.runGameTimed(new RandomPacMan(), new AvengersEvolution(evolutionFile),visual);
-		exec.runGameTimed(new HumanController(new KeyBoardInput()),new StarterGhosts(),visual);	
+//		exec.runGameTimed(new HumanController(new KeyBoardInput()),new StarterGhosts(),visual);	
 		
 		
 		/* run the game in asynchronous mode but advance as soon as both controllers are ready  - this is the mode of the competition.
