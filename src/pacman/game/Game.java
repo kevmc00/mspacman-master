@@ -1,5 +1,6 @@
 package pacman.game;
 
+import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.EnumMap;
 import java.util.Random;
@@ -1384,6 +1385,35 @@ public final class Game {
 		}
 
 		return target;
+	}
+
+	public int[] getClosestNodeIndexesFromNodeIndex(int fromNodeIndex, int[] targetNodeIndices,
+	DM distanceMeasure) 
+	{
+		double minDistance = Integer.MAX_VALUE;
+		ArrayList<Integer> targetsList = new ArrayList<Integer>();
+
+		for (int i = 0; i < targetNodeIndices.length; i++) {
+			double distance = 0;
+
+			distance = getDistance(targetNodeIndices[i], fromNodeIndex, distanceMeasure);
+
+			if (distance < minDistance) {
+				minDistance = distance;
+				targetsList.clear();
+				targetsList.add(targetNodeIndices[i]);
+			}
+			else if (distance == minDistance)
+			{
+				targetsList.add(targetNodeIndices[i]);
+			}
+		}
+
+		int[] targets = new int[targetsList.size()];
+		for(int i=0;i<targets.length;i++)
+			targets[i]=targetsList.get(i);
+
+		return targets;
 	}
 
 	/**
