@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import pacman.controllers.Controller;
 import pacman.controllers.examples.StarterGhosts;
 import pacman.game.Game;
-import pacman.game.internal.Ghost;
 
 import static pacman.game.Constants.*;
 
@@ -37,7 +36,7 @@ public class CS4096PacMan extends Controller<MOVE>
 		this.pillRoute = new PillRoutePlanner(Route.CLOSEST_AWAY);
 		this.escapeRoutePlanner = new EscapeRoutePlanner();
 		this.GHOST_TOLERANCE = 30;
-		this.LOOK_AHEAD = 5;
+		this.LOOK_AHEAD = 15;
 	}
 
 	public CS4096PacMan(int tolerance, int lookAhead){
@@ -107,7 +106,6 @@ public class CS4096PacMan extends Controller<MOVE>
 	private class PillRoutePlanner{
 		int routeIndex;
 		Route strategy;
-		ArrayList<MOVE> lastMoves;
 		Integer[] TOP_LEFT = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 22, 23, 26, 27, 28, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 58, 59, 60, 64, 65, 66, 70, 71, 72, 76, 77, 78, 79, 
 			80, 81, 82, 83, 92, 94, 96, 98, 100, 102, 104, 106, 108};
 		Integer[] TOP_RIGHT = {11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 24, 25, 29, 30, 31, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 61, 62, 63, 67, 68, 69, 73, 74, 75, 84, 85, 
@@ -124,9 +122,6 @@ public class CS4096PacMan extends Controller<MOVE>
 			routeList = new ArrayList<Integer[]>();
 			strategy = route;
 			switch (route){
-				case CLOSEST_AWAY:{
-					lastMoves = new ArrayList<MOVE>();
-				}
 				case CORNERS:
 				{
 					routeList.add(BOTTOM_RIGHT);
@@ -234,10 +229,96 @@ public class CS4096PacMan extends Controller<MOVE>
 		}
 
 		// Strategy to aim for pills that maximise distance from ghosts
+		// TODO : incorporate power pill strategy
 		private MOVE eatClosestPillAwayFromGhosts(Game game){
+			int current=game.getPacmanCurrentNodeIndex();		
+
+			// Get all pills on board
+			int[] targetsArray = getNodesOfAvailablePillsAndPowerPills(game);
+			
+			// Narrow down to closest pills within tolerance
+			// TODO : This could be better
+			int[] closestPills = game.getClosestNodeIndexesFromNodeIndexWithTolerance(current,targetsArray,DM.PATH,GHOST_TOLERANCE);
+			
+			// Use this instead to consider all pills - a bit slower and does more stuttering
+			//int[] closestPills = targetsArray;
+
+			StarterGhosts ghostController = new StarterGhosts();
+			ArrayList<GHOST> closeGhostList = new ArrayList<GHOST>();
+
+			// TODO : use Mounikas threat assessment here once done
+			for(GHOST ghost : GHOST.values())
+			{
+				// No threat if ghost is edible or in lair
+				if(game.getGhostEdibleTime(ghost)==0 && game.getGhostLairTime(ghost)==0)
+					// Checks if ghost is closer than the threshold
+					if(game.getShortestPathDistance(current,game.getGhostCurrentNodeIndex(ghost))<MIN_DISTANCE*3)
+						closeGhostList.add(ghost);
+			}
+
+			// If there is only one closest pill or no close ghosts, eat closest pill
+			if ((closestPills.length == 1) || closeGhostList.size() == 0)
+			{
+				return game.getNextMoveTowardsTarget(current,game.getClosestNodeIndexFromNodeIndex(current,targetsArray,DM.PATH),DM.PATH);
+			}
+			// If there are close ghosts, move away from them
+			else
+			{
+				double maxGhostDistance = Double.MIN_VALUE;
+				int bestPillIndex = 0;
+
+				// Play out consequences of chasing closest pills
+				for(int i = 0; i < closestPills.length; i++)
+				{
+					boolean caught = false;
+					// Get copy of the game state
+					Game gameClone = game.copy();
+					int newNode = gameClone.getPacmanCurrentNodeIndex();
+					
+					// Look ahead at consequences for set number of turns
+					for(int j = 0; j < LOOK_AHEAD; j++){
+						gameClone = getNextGameState(gameClone, closestPills[i], ghostController);
+						newNode = gameClone.getPacmanCurrentNodeIndex();
+
+						// If PacMan is eaten, raise flag
+						if ((game.getPacmanNumberOfLivesRemaining() > gameClone.getPacmanNumberOfLivesRemaining()) || gameClone.gameOver()){
+							caught = true;
+							break;
+						// If pill is eaten, no more computation necessary
+						}else if (newNode == closestPills[i]){
+							break;
+						}
+					}
+					
+					// If PacMan is eaten, do not consider this move
+					if(caught){
+						continue;
+					}	
+
+					// Get average distance from close ghosts
+					int distanceSum = 0;
+					for(GHOST ghost : closeGhostList)
+					{
+						distanceSum += gameClone.getShortestPathDistance(newNode,gameClone.getGhostCurrentNodeIndex(ghost));
+					}
+					double averageGhostDistance = distanceSum/closeGhostList.size();
+
+					// Find index of move which leads to max distance from ghosts
+					if (averageGhostDistance > maxGhostDistance)
+					{
+						maxGhostDistance = averageGhostDistance;
+						bestPillIndex = i;
+					}
+				}
+
+				return game.getNextMoveTowardsTarget(current,closestPills[bestPillIndex],DM.PATH);
+			}
+		}
+
+		private int[] getNodesOfAvailablePillsAndPowerPills(Game game){
+
 			int[] pills=game.getPillIndices();
 			int[] powerPills=game.getPowerPillIndices();
-			int current=game.getPacmanCurrentNodeIndex();		
 			
 			ArrayList<Integer> targets=new ArrayList<Integer>();
 			
@@ -253,76 +334,29 @@ public class CS4096PacMan extends Controller<MOVE>
 			
 			for(int i=0;i<targetsArray.length;i++)
 				targetsArray[i]=targets.get(i);
-			
-			//return the next direction once the closest target has been identified
-			int[] closestPills = game.getClosestNodeIndexesFromNodeIndexWithTolerance(current,targetsArray,DM.PATH,GHOST_TOLERANCE);
-			StarterGhosts ghostController = new StarterGhosts();
-			ArrayList<GHOST> closeGhostList = new ArrayList<GHOST>();
 
-			// TODO : use Mounikas threat assessment here once done
-			for(GHOST ghost : GHOST.values())
-			{
-				// No threat if ghost is edible or in lair
-				if(game.getGhostEdibleTime(ghost)==0 && game.getGhostLairTime(ghost)==0)
-					// Checks if ghost is closer than the threshold
-					if(game.getShortestPathDistance(current,game.getGhostCurrentNodeIndex(ghost))<MIN_DISTANCE*3)
-						closeGhostList.add(ghost);
-			}
+			return targetsArray;
+		}
 
-			// System.out.println("Close Ghosts: " + closeGhostList.size());
+		// NOTE: clone the game before using this function
+		private Game getNextGameState(Game game, int targetNode, StarterGhosts ghostController){
+			game.advanceGame(game.getNextMoveTowardsTarget(game.getPacmanCurrentNodeIndex(), targetNode, DM.PATH), ghostController.getMove());
+			return game;
+		}
 
-			if ((closestPills.length == 1) || closeGhostList.size() == 0)
-			{
-				return game.getNextMoveTowardsTarget(current,game.getClosestNodeIndexFromNodeIndex(current,targetsArray,DM.PATH),DM.PATH);
-			}
-			else
-			{
-				lastMoves.clear();
-				double maxGhostDistance = Double.MIN_VALUE;
-				int bestPillIndex = 0;
-
-				for(int i = 0; i < closestPills.length; i++)
-				{
-					//System.out.println("Started making it");
-					boolean caught = false;
-					Game gameClone = game.copy();
-					int newNode = gameClone.getPacmanCurrentNodeIndex();
-
-					for(int j = 0; j < LOOK_AHEAD; j++){
-						gameClone.advanceGame(gameClone.getNextMoveTowardsTarget(newNode,closestPills[i],DM.PATH), ghostController.getMove());
-						newNode = gameClone.getPacmanCurrentNodeIndex();
-
-						if ((game.getPacmanNumberOfLivesRemaining() > gameClone.getPacmanNumberOfLivesRemaining()) || gameClone.gameOver()){
-							caught = true;
-							break;
-						}else if (newNode == closestPills[i]){
-							break;
-						}
-					}
-					
-
-					if(caught){
-						// System.out.println("Move: " + game.getNextMoveTowardsTarget(current,closestPills[i],DM.PATH) + " to pill @ " + closestPills[i] + " is kill");
-						continue;
-					}	
-
-					int distanceSum = 0;
-					for(GHOST ghost : closeGhostList)
-					{
-						distanceSum += gameClone.getShortestPathDistance(newNode,gameClone.getGhostCurrentNodeIndex(ghost));
-					}
-
-					double averageGhostDistance = distanceSum/closeGhostList.size();
-					// System.out.println("Move: " + game.getNextMoveTowardsTarget(current,closestPills[i],DM.PATH) + " to pill @ " + closestPills[i] + " Avg distance: " + averageGhostDistance);
-
-					if (averageGhostDistance > maxGhostDistance)
-					{
-						maxGhostDistance = averageGhostDistance;
-						bestPillIndex = i;
-					}
+		// Method returns a boolean to say whether or not PacMan can get to a specific node without being eaten
+		// Thinking of using this for Power Pill strategy
+		private boolean canPacManGetHere(Game game, int targetNode, StarterGhosts ghostController){
+			Game gameClone = game.copy();
+			while(true){
+				gameClone = getNextGameState(gameClone, targetNode, ghostController);
+				// If PacMan is eaten, raise flag
+				if ((game.getPacmanNumberOfLivesRemaining() > gameClone.getPacmanNumberOfLivesRemaining()) || gameClone.gameOver()){
+					return false;
+				// If pill is eaten, no more computation necessary
+				}else if (gameClone.getPacmanCurrentNodeIndex() == targetNode){
+					return true;
 				}
-				// System.out.println(closestPills.length + " options. Best Move: " + game.getNextMoveTowardsTarget(current,closestPills[bestPillIndex],DM.PATH) + "\n");
-				return game.getNextMoveTowardsTarget(current,closestPills[bestPillIndex],DM.PATH);
 			}
 		}
 	}
