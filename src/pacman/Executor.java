@@ -52,8 +52,8 @@ public class Executor
 		Executor exec=new Executor();
 		
 		/* run a game in synchronous mode: game waits until controllers respond. */
-		System.out.println("STARTER PACMAN vs starter GHOSTS");
-		exec.runGame(new CS4096PacMan(), new StarterGhosts(), visual,delay);
+		// System.out.println("STARTER PACMAN vs starter GHOSTS");
+		exec.runGame(new CS4096PacMan(30, 15), new StarterGhosts(), visual,delay);
 		//exec.runGame(new StarterPacMan(), new StarterGhosts(), visual,delay);
 
 		/* run multiple games in batch mode - good for testing. */
@@ -73,12 +73,17 @@ public class Executor
 //		System.out.println("NEAREST PILL PACMAN vs RANDOM GHOSTS");
 //		exec.runExperiment(new NearestPillPacMan(), new StarterGhosts(),numTrials);
 		
-		// for(int i = 1; i <= 25; i+=1){
-		// 	System.out.println("Look Ahead: " + i);
-		// 	exec.runLevelExperiment(new CS4096PacMan(25, i),  new StarterGhosts(), numTrials, false);
+		// Tolerance Test
+		// for(int i = 5; i <= 50; i+=5){
+		// 	System.out.println("Tolerance: " + i);
+		// 	exec.runLevelExperiment(new CS4096PacMan(i, 10),  new StarterGhosts(), numTrials, false);
 		// }
   		 
-		
+		// Look Ahead Test
+		// for(int i = 1; i <= 30; i+=1){
+		// 	System.out.println("Look Ahead: " + i);
+		// 	exec.runLevelExperiment(new CS4096PacMan(30, i),  new StarterGhosts(), numTrials, false);
+		// }
 		/* run the game in asynchronous mode. */
 		
 //		exec.runGameTimed(new MyPacMan(),new AggressiveGhosts(),visual);
