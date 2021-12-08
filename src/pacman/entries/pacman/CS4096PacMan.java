@@ -277,7 +277,7 @@ public class CS4096PacMan extends Controller<MOVE>
 					
 					// Look ahead at consequences for set number of turns
 					for(int j = 0; j < LOOK_AHEAD; j++){
-						gameClone = getNextGameState(gameClone, closestPills[i], ghostController);
+						gameClone = gameClone.getNextGameState(gameClone, closestPills[i], ghostController);
 						newNode = gameClone.getPacmanCurrentNodeIndex();
 
 						// If PacMan is eaten, raise flag
@@ -336,28 +336,6 @@ public class CS4096PacMan extends Controller<MOVE>
 				targetsArray[i]=targets.get(i);
 
 			return targetsArray;
-		}
-
-		// NOTE: clone the game before using this function
-		private Game getNextGameState(Game game, int targetNode, StarterGhosts ghostController){
-			game.advanceGame(game.getNextMoveTowardsTarget(game.getPacmanCurrentNodeIndex(), targetNode, DM.PATH), ghostController.getMove());
-			return game;
-		}
-
-		// Method returns a boolean to say whether or not PacMan can get to a specific node without being eaten
-		// Thinking of using this for Power Pill strategy
-		private boolean canPacManGetHere(Game game, int targetNode, StarterGhosts ghostController){
-			Game gameClone = game.copy();
-			while(true){
-				gameClone = getNextGameState(gameClone, targetNode, ghostController);
-				// If PacMan is eaten, raise flag
-				if ((game.getPacmanNumberOfLivesRemaining() > gameClone.getPacmanNumberOfLivesRemaining()) || gameClone.gameOver()){
-					return false;
-				// If pill is eaten, no more computation necessary
-				}else if (gameClone.getPacmanCurrentNodeIndex() == targetNode){
-					return true;
-				}
-			}
 		}
 	}
 
