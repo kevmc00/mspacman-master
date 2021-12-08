@@ -1,8 +1,6 @@
 package pacman.entries.pacman;
 
 import java.util.ArrayList;
-import java.util.Collections;
-
 import pacman.controllers.Controller;
 import pacman.controllers.examples.StarterGhosts;
 import pacman.game.Game;
@@ -27,6 +25,8 @@ public class CS4096PacMan extends Controller<MOVE>
 		CORNERS,
 	}
 	private static final int MIN_DISTANCE=20;	//if a ghost is this close, run away
+	private int GHOST_TOLERANCE;
+	private int LOOK_AHEAD;
 
 	private PillRoutePlanner pillRoute;
 	private EscapeRoutePlanner escapeRoutePlanner;
@@ -35,6 +35,15 @@ public class CS4096PacMan extends Controller<MOVE>
 	public CS4096PacMan(){
 		this.pillRoute = new PillRoutePlanner(Route.CLOSEST_AWAY);
 		this.escapeRoutePlanner = new EscapeRoutePlanner();
+		this.GHOST_TOLERANCE = 20;
+		this.LOOK_AHEAD = 10;
+	}
+
+	public CS4096PacMan(int tolerance, int lookAhead){
+		this.pillRoute = new PillRoutePlanner(Route.CLOSEST_AWAY);
+		this.escapeRoutePlanner = new EscapeRoutePlanner();
+		this.GHOST_TOLERANCE = tolerance;
+		this.LOOK_AHEAD = lookAhead;
 	}
 	
 	public MOVE getMove(Game game,long timeDue)
@@ -42,35 +51,33 @@ public class CS4096PacMan extends Controller<MOVE>
 		int current=game.getPacmanCurrentNodeIndex();
 
 		//Strategy 1: if any non-edible ghost is too close (less than MIN_DISTANCE), run away
-		// TODO : fix to react as "if threat assessment is high, follow escape route"
-		if (AssessThreat(game) == 1){
-			lastMove = escapeRoutePlanner.getNextMove(game);
-			return lastMove;
-		}
+		// if (AssessThreat(game) == 1){
+		// 	lastMove = escapeRoutePlanner.getNextMove(game);
+		// 	return lastMove;
+		// }
 
-		//Strategy 2: find the nearest edible ghost and go after them 
-		// TODO : find better threshold for ghost edible time
-		int minDistance=Integer.MAX_VALUE;
-		GHOST minGhost=null;		
+		// //Strategy 2: find the nearest edible ghost and go after them 
+		// //TODO : find better threshold for ghost edible time
+		// int minDistance=Integer.MAX_VALUE;
+		// GHOST minGhost=null;		
 		
-		for(GHOST ghost : GHOST.values())
-			if(game.getGhostEdibleTime(ghost)>5)
-			{
-				int distance=game.getShortestPathDistance(current,game.getGhostCurrentNodeIndex(ghost));
+		// for(GHOST ghost : GHOST.values())
+		// 	if(game.getGhostEdibleTime(ghost)>5)
+		// 	{
+		// 		int distance=game.getShortestPathDistance(current,game.getGhostCurrentNodeIndex(ghost));
 				
-				if(distance<minDistance)
-				{
-					minDistance=distance;
-					minGhost=ghost;
-				}
-			}
+		// 		if(distance<minDistance)
+		// 		{
+		// 			minDistance=distance;
+		// 			minGhost=ghost;
+		// 		}
+		// 	}
 		
-		if(minGhost!=null){	//we found an edible ghost
-			lastMove = game.getNextMoveTowardsTarget(game.getPacmanCurrentNodeIndex(),game.getGhostCurrentNodeIndex(minGhost),DM.PATH);
-			return lastMove;
-		}
+		// if(minGhost!=null){	//we found an edible ghost
+		// 	lastMove = game.getNextMoveTowardsTarget(game.getPacmanCurrentNodeIndex(),game.getGhostCurrentNodeIndex(minGhost),DM.PATH);
+		// 	return lastMove;
+		// }
 		//Strategy 3: go after the pills and power pills
-		// TODO : make pill route planner better
 		lastMove = pillRoute.getMoveTowardsPills(game);
 		return lastMove;
 
@@ -95,10 +102,11 @@ public class CS4096PacMan extends Controller<MOVE>
 	}
 
 	// KEVIN
-	// TODO : make routes swappable
+	// TODO : make routes swappable and figure out corners
 	private class PillRoutePlanner{
 		int routeIndex;
 		Route strategy;
+		ArrayList<MOVE> lastMoves;
 		Integer[] TOP_LEFT = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 22, 23, 26, 27, 28, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 58, 59, 60, 64, 65, 66, 70, 71, 72, 76, 77, 78, 79, 
 			80, 81, 82, 83, 92, 94, 96, 98, 100, 102, 104, 106, 108};
 		Integer[] TOP_RIGHT = {11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 24, 25, 29, 30, 31, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 61, 62, 63, 67, 68, 69, 73, 74, 75, 84, 85, 
@@ -115,6 +123,9 @@ public class CS4096PacMan extends Controller<MOVE>
 			routeList = new ArrayList<Integer[]>();
 			strategy = route;
 			switch (route){
+				case CLOSEST_AWAY:{
+					lastMoves = new ArrayList<MOVE>();
+				}
 				case CORNERS:
 				{
 					routeList.add(BOTTOM_RIGHT);
@@ -221,6 +232,7 @@ public class CS4096PacMan extends Controller<MOVE>
 			return game.getNextMoveTowardsTarget(current,game.getClosestNodeIndexFromNodeIndex(current,targetsArray,DM.PATH),DM.PATH);
 		}
 
+		// Strategy to aim for pills that maximise distance from ghosts
 		private MOVE eatClosestPillAwayFromGhosts(Game game){
 			int[] pills=game.getPillIndices();
 			int[] powerPills=game.getPowerPillIndices();
@@ -242,48 +254,68 @@ public class CS4096PacMan extends Controller<MOVE>
 				targetsArray[i]=targets.get(i);
 			
 			//return the next direction once the closest target has been identified
-			int[] closestPills = game.getClosestNodeIndexesFromNodeIndex(current,targetsArray,DM.PATH);
+			int[] closestPills = game.getClosestNodeIndexesFromNodeIndexWithTolerance(current,targetsArray,DM.PATH,GHOST_TOLERANCE);
 			StarterGhosts ghostController = new StarterGhosts();
 			ArrayList<GHOST> closeGhostList = new ArrayList<GHOST>();
+
+			// TODO : use Mounikas threat assessment here once done
 			for(GHOST ghost : GHOST.values())
 			{
 				// No threat if ghost is edible or in lair
 				if(game.getGhostEdibleTime(ghost)==0 && game.getGhostLairTime(ghost)==0)
 					// Checks if ghost is closer than the threshold
-					if(game.getShortestPathDistance(current,game.getGhostCurrentNodeIndex(ghost))<MIN_DISTANCE*2)
+					if(game.getShortestPathDistance(current,game.getGhostCurrentNodeIndex(ghost))<MIN_DISTANCE*3)
 						closeGhostList.add(ghost);
 			}
 
-			if(closeGhostList.size() > 0){
-				System.out.println("Close ghosts: " + closeGhostList.size());
-			}
-
 			if ((closestPills.length == 1) || closeGhostList.size() == 0)
-				return game.getNextMoveTowardsTarget(current,closestPills[0],DM.PATH);
+			{
+				return game.getNextMoveTowardsTarget(current,game.getClosestNodeIndexFromNodeIndex(current,targetsArray,DM.PATH),DM.PATH);
+			}
 			else
 			{
-				double minGhostDistance = Double.MAX_VALUE;
+				lastMoves.clear();
+				double maxGhostDistance = Double.MIN_VALUE;
 				int bestPillIndex = 0;
 
 				for(int i = 0; i < closestPills.length; i++)
 				{
 					Game gameClone = game.copy();
-					gameClone.advanceGame(gameClone.getNextMoveTowardsTarget(current,closestPills[i],DM.PATH), ghostController.getMove());
 					int newNode = gameClone.getPacmanCurrentNodeIndex();
+					boolean gameOver = false;
+					for(int j = 0; j < LOOK_AHEAD; j++){
+						gameClone.advanceGame(gameClone.getNextMoveTowardsTarget(newNode,closestPills[i],DM.PATH), ghostController.getMove());
+						newNode = gameClone.getPacmanCurrentNodeIndex();
+						if (gameClone.gameOver()){
+							gameOver = true;
+							break;
+						}else if (newNode == closestPills[i]){
+							break;
+						}	
+					}
+
+					if(gameOver)	continue;
+
 					int distanceSum = 0;
+					System.out.println("Close Ghosts: " + closeGhostList.size());
+					// TODO : fix bug - ghost index sometimes appears as last node index in map, screwing up this calculation
 					for(GHOST ghost : closeGhostList)
 					{
 						distanceSum += gameClone.getShortestPathDistance(newNode,gameClone.getGhostCurrentNodeIndex(ghost));
 					}
 
 					double averageGhostDistance = distanceSum/closeGhostList.size();
-					if (averageGhostDistance < minGhostDistance)
+					if (averageGhostDistance == -1){
+						//System.out.println("PacMan: " + newNode + " Pill: " + closestPills[i] + " Move: " + game.getNextMoveTowardsTarget(current,closestPills[i],DM.PATH));
+					}
+
+					if (averageGhostDistance > maxGhostDistance)
 					{
-						minGhostDistance = averageGhostDistance;
+						maxGhostDistance = averageGhostDistance;
 						bestPillIndex = i;
 					}
 				}
-
+				System.out.println(closestPills.length + " options. Best Move: " + game.getNextMoveTowardsTarget(current,closestPills[bestPillIndex],DM.PATH) + "\n");
 				return game.getNextMoveTowardsTarget(current,closestPills[bestPillIndex],DM.PATH);
 			}
 		}
