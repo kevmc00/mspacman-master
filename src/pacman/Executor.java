@@ -53,37 +53,37 @@ public class Executor
 		
 		/* run a game in synchronous mode: game waits until controllers respond. */
 		// System.out.println("STARTER PACMAN vs starter GHOSTS");
-		exec.runGame(new CS4096PacMan(30, 15), new StarterGhosts(), visual,delay);
+		//exec.runGame(new CS4096PacMan(30, 15), new StarterGhosts(), visual,delay);
 		//exec.runGame(new StarterPacMan(), new StarterGhosts(), visual,delay);
 
 		/* run multiple games in batch mode - good for testing. */
 		
-//		System.out.println("STARTER PACMAN vs LEGACY2THERECONING");
-//		exec.runExperiment(new StarterPacMan(), new Legacy2TheReckoning(),numTrials);
-//		System.out.println("RANDOM PACMAN vs LEGACY2THERECONING");
-//		exec.runExperiment(new RandomPacMan(), new Legacy2TheReckoning(),numTrials);
-//		System.out.println("NEAREST PILL PACMAN vs LEGACY2THERECONING");
-//		exec.runExperiment(new NearestPillPacMan(), new Legacy2TheReckoning(),numTrials);
+		System.out.println("STARTER PACMAN vs LEGACY2THERECONING");
+		exec.runExperiment(new StarterPacMan(), new Legacy2TheReckoning(),numTrials);
+		System.out.println("RANDOM PACMAN vs LEGACY2THERECONING");
+		exec.runExperiment(new RandomPacMan(), new Legacy2TheReckoning(),numTrials);
+		System.out.println("NEAREST PILL PACMAN vs LEGACY2THERECONING");
+		exec.runExperiment(new NearestPillPacMan(), new Legacy2TheReckoning(),numTrials);
 //		
 //		
-		// System.out.println("STARTER PACMAN vs starter GHOSTS");
-		// exec.runExperiment(new StarterPacMan(), new StarterGhosts(),numTrials);
-		// System.out.println("CS4096 PACMAN vs Starter GHOSTS");
-		// exec.runExperiment(new CS4096PacMan(),  new StarterGhosts(),numTrials);
-//		System.out.println("NEAREST PILL PACMAN vs RANDOM GHOSTS");
-//		exec.runExperiment(new NearestPillPacMan(), new StarterGhosts(),numTrials);
+		System.out.println("STARTER PACMAN vs starter GHOSTS");
+		exec.runExperiment(new StarterPacMan(), new StarterGhosts(),numTrials);
+		System.out.println("CS4096 PACMAN vs Starter GHOSTS");
+		exec.runExperiment(new CS4096PacMan(),  new StarterGhosts(),numTrials);
+		System.out.println("NEAREST PILL PACMAN vs RANDOM GHOSTS");
+		exec.runExperiment(new NearestPillPacMan(), new StarterGhosts(),numTrials);
 		
-		// Tolerance Test
-		// for(int i = 5; i <= 50; i+=5){
-		// 	System.out.println("Tolerance: " + i);
-		// 	exec.runLevelExperiment(new CS4096PacMan(i, 10),  new StarterGhosts(), numTrials, false);
-		// }
+		//Tolerance Test
+		for(int i = 5; i <= 50; i+=5){
+			System.out.println("Tolerance: " + i);
+			exec.runLevelExperiment(new CS4096PacMan(i, 10),  new StarterGhosts(), numTrials, false);
+		}
   		 
 		// Look Ahead Test
-		// for(int i = 1; i <= 30; i+=1){
-		// 	System.out.println("Look Ahead: " + i);
-		// 	exec.runLevelExperiment(new CS4096PacMan(30, i),  new StarterGhosts(), numTrials, false);
-		// }
+		for(int i = 1; i <= 30; i+=1){
+			System.out.println("Look Ahead: " + i);
+			exec.runLevelExperiment(new CS4096PacMan(30, i),  new StarterGhosts(), numTrials, false);
+		}
 		/* run the game in asynchronous mode. */
 		
 //		exec.runGameTimed(new MyPacMan(),new AggressiveGhosts(),visual);
