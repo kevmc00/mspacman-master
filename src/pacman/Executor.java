@@ -137,7 +137,7 @@ public class Executor
 			
 			avgScore+=game.getScore();
 			avgLevel+=game.getCurrentLevel();
-			System.out.println(i+"\t"+game.getScore()+"\t Lvl " + game.getCurrentLevel());
+			//System.out.println(i+"\t"+game.getScore()+"\t Lvl " + game.getCurrentLevel());
 		}
 		
 		System.out.println("Average Score: " + avgScore/trials);
@@ -164,7 +164,7 @@ public class Executor
 			
 			avgScore+=game.getScore();
 			avgLevel+=game.getCurrentLevel();
-			System.out.println(i+"\t"+game.getScore()+"\t Lvl " + game.getCurrentLevel());
+			//System.out.println(i+"\t"+game.getScore()+"\t Lvl " + game.getCurrentLevel());
 		}
 		
 		System.out.println("Average Score: " + avgScore/trials);
