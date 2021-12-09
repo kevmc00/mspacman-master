@@ -58,12 +58,12 @@ public class Executor
 
 		/* run multiple games in batch mode - good for testing. */
 		
-//		System.out.println("STARTER PACMAN vs LEGACY2THERECONING");
-//		exec.runExperiment(new StarterPacMan(), new Legacy2TheReckoning(),numTrials);
-//		System.out.println("RANDOM PACMAN vs LEGACY2THERECONING");
-//		exec.runExperiment(new RandomPacMan(), new Legacy2TheReckoning(),numTrials);
-//		System.out.println("NEAREST PILL PACMAN vs LEGACY2THERECONING");
-//		exec.runExperiment(new NearestPillPacMan(), new Legacy2TheReckoning(),numTrials);
+		// System.out.println("STARTER PACMAN vs LEGACY2THERECONING");
+		// exec.runExperiment(new StarterPacMan(), new Legacy2TheReckoning(),numTrials);
+		// System.out.println("RANDOM PACMAN vs LEGACY2THERECONING");
+		// exec.runExperiment(new RandomPacMan(), new Legacy2TheReckoning(),numTrials);
+		// System.out.println("NEAREST PILL PACMAN vs LEGACY2THERECONING");
+		// exec.runExperiment(new NearestPillPacMan(), new Legacy2TheReckoning(),numTrials);
 //		
 //		
 		// System.out.println("STARTER PACMAN vs starter GHOSTS");
@@ -79,7 +79,7 @@ public class Executor
 		// 	exec.runLevelExperiment(new CS4096PacMan(i, 10),  new StarterGhosts(), numTrials, false);
 		// }
   		 
-		// Look Ahead Test
+		// // Look Ahead Test
 		// for(int i = 1; i <= 30; i+=1){
 		// 	System.out.println("Look Ahead: " + i);
 		// 	exec.runLevelExperiment(new CS4096PacMan(30, i),  new StarterGhosts(), numTrials, false);
@@ -137,7 +137,7 @@ public class Executor
 			
 			avgScore+=game.getScore();
 			avgLevel+=game.getCurrentLevel();
-			System.out.println(i+"\t"+game.getScore()+"\t Lvl " + game.getCurrentLevel());
+			//System.out.println(i+"\t"+game.getScore()+"\t Lvl " + game.getCurrentLevel());
 		}
 		
 		System.out.println("Average Score: " + avgScore/trials);
@@ -164,7 +164,7 @@ public class Executor
 			
 			avgScore+=game.getScore();
 			avgLevel+=game.getCurrentLevel();
-			System.out.println(i+"\t"+game.getScore()+"\t Lvl " + game.getCurrentLevel());
+			//System.out.println(i+"\t"+game.getScore()+"\t Lvl " + game.getCurrentLevel());
 		}
 		
 		System.out.println("Average Score: " + avgScore/trials);

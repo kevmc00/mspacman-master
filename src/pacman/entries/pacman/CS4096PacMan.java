@@ -160,7 +160,13 @@ public class CS4096PacMan extends Controller<MOVE>
 
 			// Variables for closest ghost and their distance
 			GHOST closest_ghost = GHOST.values()[0];
-			int closest_distance = 999999;
+
+			int closest_distance = Integer.MAX_VALUE;
+			GHOST sec_closest_ghost = GHOST.values()[0];
+			int sec_closest_distance = Integer.MAX_VALUE;
+			int[] ghostArray=new int[2];	
+			
+
 
 			// Check all ghosts
 			for(GHOST ghost : GHOST.values())
@@ -171,8 +177,39 @@ public class CS4096PacMan extends Controller<MOVE>
 						closest_ghost = ghost;
 						closest_distance = game.getShortestPathDistance(current,game.getGhostCurrentNodeIndex(ghost));
 					}
+
+			ghostArray[0] = game.getGhostCurrentNodeIndex(closest_ghost);
+			//check for closest pill and confirm that the pill is not in the direction of the ghost
+			int[] powerPills = HELPER.getNodesOfAvailablePowerPills(game);
+			int closestAccessiblePowerPill = Integer.MAX_VALUE;
+			int minPowerPillDistance = Integer.MAX_VALUE;
+			AggressiveGhosts ghostController = new AggressiveGhosts();
+			for (int pill : powerPills){
+				if((HELPER.canPacManGetHere(game, pill, ghostController) && game.getShortestPathDistance(current, pill) < minPowerPillDistance)){
+					closestAccessiblePowerPill = pill;
+					minPowerPillDistance = game.getShortestPathDistance(current, pill);
+				}
+			}
+//			if (game.getShortestPathDistance(closestAccessiblePowerPill, ghostArray[0])<closest_distance) {
+//				return game.getNextMoveAwayFromTarget(current,closestAccessiblePowerPill,DM.PATH);
+//			}
+					
+			for (GHOST ghost : GHOST.values())
+				if (ghost != closest_ghost) {
+					if(game.getGhostEdibleTime(ghost)==0 && game.getGhostLairTime(ghost)==0)
+						// Check if ghost is closest
+						if(game.getShortestPathDistance(current,game.getGhostCurrentNodeIndex(ghost))<sec_closest_distance){
+							sec_closest_ghost = ghost;
+							sec_closest_distance = game.getShortestPathDistance(current,game.getGhostCurrentNodeIndex(ghost));
+						}
+				}
+			
+			ghostArray[1] = game.getGhostCurrentNodeIndex(sec_closest_ghost);
 			// Return move away from closest ghost
-			return game.getNextMoveAwayFromTarget(game.getPacmanCurrentNodeIndex(),game.getGhostCurrentNodeIndex(closest_ghost),DM.PATH); 
+			return game.getNextMoveAwayFromTarget(current,game.getClosestNodeIndexFromNodeIndex(current,ghostArray,DM.PATH),DM.PATH);
+			
+
+			
 		}
 	}
 
@@ -297,8 +334,6 @@ public class CS4096PacMan extends Controller<MOVE>
 					}
 					distanceSum += gameClone.getShortestPathDistance(newNode,gameClone.getGhostCurrentNodeIndex(ghost));
 				}
-
-
 
 				double averageGhostDistance;
 				
