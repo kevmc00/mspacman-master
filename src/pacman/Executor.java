@@ -9,6 +9,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Random;
 
 import pacman.controllers.Controller;
@@ -105,7 +106,56 @@ public class Executor
 		//String fileName="replay.txt";
 		//exec.runGameTimedRecorded(new HumanController(new KeyBoardInput()),new RandomGhosts(),visual,fileName);
 		//exec.replayGame(fileName,visual);
-	}
+	} 
+
+ // stats methods
+ 
+	public double mean(int[] scoreslist) 
+	{
+		double sumOfScores = 0.0;    
+		int n = scoreslist.length;
+        for (int i = 0; i < n; i++) {
+            sumOfScores = sumOfScores + scoreslist[i];
+        }	
+        double mean = sumOfScores/n;
+        return mean;
+     }
+	public double median(int[] scoreslist) 
+	{
+    	double median =0.0;
+		Arrays.sort(scoreslist);
+
+    	int n = scoreslist.length;
+    	for (int i = 0; i < n; i++) {
+    		if(n%2==1)
+			{median=scoreslist[((n+1)/2)-1];
+			}
+    		else
+			{median=(double)(scoreslist[(n/2)-1]+scoreslist[n/2])/2;
+			}		
+		}
+    	return median;
+    }
+
+	public double variance(int[] scoreslist) 
+	{
+    	double variance = 0.0;
+    	double mean = mean(scoreslist);
+    	int n = scoreslist.length;
+    	for (int i = 0; i < n; i++) {
+			variance = variance + Math.pow(scoreslist[i] - mean, 2);
+		}
+	    variance /= n;
+    	return variance;
+    }
+    
+	public double stdDeviation(int[] scoreslist) 
+	{
+    	double variance = variance(scoreslist);
+    	double stdev = Math.sqrt(variance); 
+    	return stdev;
+    }
+ 
 	
     /**
      * For running multiple games without visuals. This is useful to get a good idea of how well a controller plays
@@ -119,8 +169,7 @@ public class Executor
      */
     public void runExperiment(Controller<MOVE> pacManController,Controller<EnumMap<GHOST,MOVE>> ghostController,int trials)
     {
-    	double avgScore=0;
-		double avgLevel=0;
+		List<Integer> scoreslist = new ArrayList<Integer>();//(declare on top for accessing it as global variable)
     	
     	Random rnd=new Random(0);
 		Game game;
@@ -135,13 +184,23 @@ public class Executor
 		        		ghostController.getMove(game.copy(),System.currentTimeMillis()+DELAY));
 			}
 			
-			avgScore+=game.getScore();
-			avgLevel+=game.getCurrentLevel();
-			//System.out.println(i+"\t"+game.getScore()+"\t Lvl " + game.getCurrentLevel());
+			scoreslist.add(game.getScore());
 		}
-		
-		System.out.println("Average Score: " + avgScore/trials);
-		System.out.println("Average Level: " + avgLevel/trials);
+
+		int[] list = new int[scoreslist.size()];
+		for(int i = 0; i < scoreslist.size(); i++){
+			list[i] = scoreslist.get(i);
+		}
+
+		// calling the methods defined to find stats
+		double mean = mean(list);
+		System.out.println("mean of the scores is :"+mean);
+		double median = median(list);
+		System.out.println("median of the scores is :"+median);
+		double variance = variance(list);
+		System.out.println("variance of the scores is :"+ variance);
+		double stdDev = stdDeviation(list);
+		System.out.println("stdDev of the scores is :"+ stdDev);
     }
 
 	public double runScoreExperiment(Controller<MOVE> pacManController,Controller<EnumMap<GHOST,MOVE>> ghostController,int trials)
