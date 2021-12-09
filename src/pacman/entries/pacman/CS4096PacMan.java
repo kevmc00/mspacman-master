@@ -365,9 +365,9 @@ public class CS4096PacMan extends Controller<MOVE>
 
 			// Variables for closest ghost and their distance
 			GHOST closest_ghost = GHOST.values()[0];
-			int closest_distance = 999999;
+			int closest_distance = Integer.MAX_VALUE;
 			GHOST sec_closest_ghost = GHOST.values()[0];
-			int sec_closest_distance = 99999;
+			int sec_closest_distance = Integer.MAX_VALUE;
 			int[] ghostArray=new int[2];	
 			
 			
@@ -393,9 +393,9 @@ public class CS4096PacMan extends Controller<MOVE>
 					minPowerPillDistance = game.getShortestPathDistance(current, pill);
 				}
 			}
-			if (game.getShortestPathDistance(closestAccessiblePowerPill, ghostArray[0])<closest_distance) {
-				return game.getNextMoveAwayFromTarget(current,closestAccessiblePowerPill,DM.PATH);
-			}
+//			if (game.getShortestPathDistance(closestAccessiblePowerPill, ghostArray[0])<closest_distance) {
+//				return game.getNextMoveAwayFromTarget(current,closestAccessiblePowerPill,DM.PATH);
+//			}
 					
 			for (GHOST ghost : GHOST.values())
 				if (ghost != closest_ghost) {
