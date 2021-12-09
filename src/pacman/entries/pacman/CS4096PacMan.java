@@ -312,6 +312,7 @@ public class CS4096PacMan extends Controller<MOVE>
 			GHOST sec_closest_ghost = GHOST.values()[0];
 			int closest_distance = 999999;
 			int sec_closest_distance=999999;
+<<<<<<< Updated upstream
 			int[] targetsArray=new int[2];
 			
 
@@ -320,10 +321,53 @@ public class CS4096PacMan extends Controller<MOVE>
 <<<<<<< Updated upstream
 				// No need to run if ghost is edible or in lair and Check if ghost is closest
 				if(game.getGhostEdibleTime(ghost)==0 && game.getGhostLairTime(ghost)==0 && game.getShortestPathDistance(current,game.getGhostCurrentNodeIndex(ghost))<closest_distance)
+=======
+
+			// Check all ghosts
+			for(GHOST ghost : GHOST.values())
+			{
+				// No need to run if ghost is edible or in lair
+				if(game.getGhostEdibleTime(ghost)==0 && game.getGhostLairTime(ghost)==0)
+>>>>>>> Stashed changes
 				{
-					closest_ghost = ghost;
-					closest_distance = game.getShortestPathDistance(current,game.getGhostCurrentNodeIndex(ghost));
-					//check if there is a power pill nearby to eat
+					// Check for ghost is closest
+					if (game.getShortestPathDistance(current,game.getGhostCurrentNodeIndex(ghost))<closest_distance)
+					{
+						closest_ghost = ghost;
+						closest_distance = game.getShortestPathDistance(current,game.getGhostCurrentNodeIndex(ghost));
+						//check if there is a power pill nearby to eat
+						//if the ghost is moving in the opposite direction, no need to run away from it
+						
+					}
+									
+				}
+			}
+			for(GHOST ghost : GHOST.values())
+			{
+				if (ghost != closest_ghost)
+				{
+					if (game.getShortestPathDistance(current,game.getGhostCurrentNodeIndex(ghost))<sec_closest_distance)
+					{
+						sec_closest_ghost = ghost;
+						sec_closest_distance = game.getShortestPathDistance(current,game.getGhostCurrentNodeIndex(ghost));
+					}
+				}
+			}
+			if (game.getShortestPathDistance(game.getGhostCurrentNodeIndex(closest_ghost),game.getGhostCurrentNodeIndex(closest_ghost))<closest_ghost)
+			{
+				return game.getNextMoveAwayFromTarget(game.getPacmanCurrentNodeIndex(),game.getGhostCurrentNodeIndex(closest_ghost),DM.PATH);
+			}
+			else
+			{
+				return game.getNextMoveAwayFromTarget(game.getPacmanCurrentNodeIndex(),game.getGhostCurrentNodeIndex(sec_closest_ghost),DM.PATH);
+			}
+			// check how many ghost are nearby if more than 1 change direction 
+			// check for ghost distances around the new place and if suitable then move 
+			// can use game.getApproximateNextMoveAwayFromTarget 
+			// Return move away from closest ghost 
+		}
+	}
+}				//check if there is a power pill nearby to eat
 					//if the ghost is moving in the opposite direction, no need to run away from it
 					
 				}
