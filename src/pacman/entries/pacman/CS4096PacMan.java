@@ -163,7 +163,7 @@ public class CS4096PacMan extends Controller<MOVE>
 			return game.getNextMoveTowardsTarget(current,game.getClosestNodeIndexFromNodeIndex(current,targetsArray,DM.PATH),DM.PATH);
 		}
 
-		private MOVE eatClosestPill(Game game){
+		public MOVE eatClosestPill(Game game){
 			int[] pills=game.getPillIndices();
 			int[] powerPills=game.getPowerPillIndices();
 			int current=game.getPacmanCurrentNodeIndex();		
@@ -189,7 +189,7 @@ public class CS4096PacMan extends Controller<MOVE>
 
 		// Strategy to aim for pills that maximize distance from ghosts
 		// TODO : incorporate power pill strategy
-		private MOVE eatClosestPillAwayFromGhosts(Game game){
+		public MOVE eatClosestPillAwayFromGhosts(Game game){
 			int current=game.getPacmanCurrentNodeIndex();		
 
 			// Get all pills on board
@@ -216,7 +216,7 @@ public class CS4096PacMan extends Controller<MOVE>
 			}
 
 			// If there is only one closest pill or no close ghosts, eat closest pill
-			if ((closestPills.length == 1) || closeGhostList.size() == 0)
+			if ((closestPills.length == 3) || closeGhostList.size() == 0)
 			{
 				return game.getNextMoveTowardsTarget(current,game.getClosestNodeIndexFromNodeIndex(current,targetsArray,DM.PATH),DM.PATH);
 			}
@@ -309,10 +309,15 @@ public class CS4096PacMan extends Controller<MOVE>
 
 			// Variables for closest ghost and their distance
 			GHOST closest_ghost = GHOST.values()[0];
+			GHOST sec_closest_ghost = GHOST.values()[0];
 			int closest_distance = 999999;
+			int sec_closest_distance=999999;
+			int[] targetsArray=new int[2];
+			
 
 			// Check all ghosts
 			for(GHOST ghost : GHOST.values())
+<<<<<<< Updated upstream
 				// No need to run if ghost is edible or in lair and Check if ghost is closest
 				if(game.getGhostEdibleTime(ghost)==0 && game.getGhostLairTime(ghost)==0 && game.getShortestPathDistance(current,game.getGhostCurrentNodeIndex(ghost))<closest_distance)
 				{
@@ -328,10 +333,53 @@ public class CS4096PacMan extends Controller<MOVE>
 			// Return move away from closest ghost 
 			return game.getNextMoveAwayFromTarget(game.getPacmanCurrentNodeIndex(),game.getGhostCurrentNodeIndex(closest_ghost),DM.PATH);
 			//not sure if this checks for corners. if it doesn't need to chagne route
+=======
+			{
+				// No need to run if ghost is edible or in lair
+				if(game.getGhostEdibleTime(ghost)==0 && game.getGhostLairTime(ghost)==0)
+				{
+					// Check for ghost is closest
+					if (game.getShortestPathDistance(current,game.getGhostCurrentNodeIndex(ghost))<closest_distance)
+					{
+						closest_ghost = ghost;
+						closest_distance = game.getShortestPathDistance(current,game.getGhostCurrentNodeIndex(ghost));
+						//check if there is a power pill nearby to eat
+						//if the ghost is moving in the opposite direction, no need to run away from it
+						
+					}
+									
+				}
+			}
+			for(GHOST ghost : GHOST.values())
+			{
+				if (ghost != closest_ghost)
+				{
+					if (game.getShortestPathDistance(current,game.getGhostCurrentNodeIndex(ghost))<sec_closest_distance)
+					{
+						sec_closest_ghost = ghost;
+						sec_closest_distance = game.getShortestPathDistance(current,game.getGhostCurrentNodeIndex(ghost));
+					}
+				}
+			}
+			targetsArray[0]=game.getGhostCurrentNodeIndex(closest_ghost);
+			targetsArray[1]=game.getGhostCurrentNodeIndex(sec_closest_ghost);
+			// check how many ghost are nearby if more than 1 get away from both 
+			if (game.getShortestPathDistance(game.getGhostCurrentNodeIndex(closest_ghost),game.getGhostCurrentNodeIndex(closest_ghost))<closest_distance)
+			{
+				return game.getNextMoveAwayFromTarget(game.getPacmanCurrentNodeIndex(),game.getGhostCurrentNodeIndex(closest_ghost),DM.EUCLID);
+			}
+			else
+			{			
+				return game.getNextMoveAwayFromTarget(game.getPacmanCurrentNodeIndex(),game.getClosestNodeIndexFromNodeIndex(current,targetsArray,DM.PATH),DM.PATH);
+
+			}
+			 
+			// check for ghost distances around the new place and if suitable then move 
+			// Return move away from closest ghost 
+>>>>>>> Stashed changes
 		}
 	}
 }
-
 
 
 
