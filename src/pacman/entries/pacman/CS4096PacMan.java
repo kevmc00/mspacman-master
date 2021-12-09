@@ -357,9 +357,7 @@ private PillRoutePlanner(Route route){
 
 			return targetsArray;
 		}
-
-	// PRIYAL AND RISHABH
-	private class EscapeRoutePlanner{
+	
 		private EscapeRoutePlanner(){}
 
 
