@@ -391,7 +391,8 @@ public class CS4096PacMan extends Controller<MOVE>
 			ghostArray[0] = game.getGhostCurrentNodeIndex(closest_ghost);
 			ghostArray[1] = game.getGhostCurrentNodeIndex(sec_closest_ghost);
 			// Return move away from closest ghost
-			return game.getNextMoveAwayFromTarget(game.getPacmanCurrentNodeIndex(),game.getClosestNodeIndexFromNodeIndex(current,ghostArray,DM.PATH),DM.PATH); 
+			return game.getNextMoveAwayFromTarget(game.getPacmanCurrentNodeIndex(),game.getClosestNodeIndexFromNodeIndex(current,ghostArray,DM.PATH),DM.PATH);
+			
 		}
 	}
 }
