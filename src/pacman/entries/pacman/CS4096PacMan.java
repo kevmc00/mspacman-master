@@ -39,6 +39,7 @@ public class CS4096PacMan extends Controller<MOVE>
 	public CS4096PacMan(int tolerance, int lookAhead){
 		this.pillRoute = new PillRoutePlanner();
 		this.escapeRoutePlanner = new EscapeRoutePlanner();
+		this.ghostHunter = new GhostHunter();
 		this.GHOST_TOLERANCE = tolerance;
 		this.LOOK_AHEAD = lookAhead;
 	}
@@ -190,7 +191,8 @@ public class CS4096PacMan extends Controller<MOVE>
 					minPowerPillDistance = game.getShortestPathDistance(current, pill);
 				}
 			}
-			if (game.getShortestPathDistance(closestAccessiblePowerPill, ghostArray[0])<closest_distance) {
+
+			if ((closestAccessiblePowerPill != Integer.MAX_VALUE) && (game.getShortestPathDistance(closestAccessiblePowerPill, ghostArray[0])<closest_distance)) {
 				return game.getNextMoveTowardsTarget(current,closestAccessiblePowerPill,DM.PATH);
 			}
 					
