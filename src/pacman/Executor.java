@@ -53,8 +53,8 @@ public class Executor
 		
 		/* run a game in synchronous mode: game waits until controllers respond. */
 		// System.out.println("STARTER PACMAN vs starter GHOSTS");
-		exec.runGame(new CS4096PacMan(30, 15), new StarterGhosts(), visual,delay);
-		//exec.runGame(new StarterPacMan(), new StarterGhosts(), visual,delay);
+		// exec.runGame(new CS4096PacMan(30, 15), new StarterGhosts(), visual,delay);
+		// exec.runGame(new StarterPacMan(), new StarterGhosts(), visual,delay);
 
 		/* run multiple games in batch mode - good for testing. */
 		
@@ -68,8 +68,8 @@ public class Executor
 //		
 		// System.out.println("STARTER PACMAN vs starter GHOSTS");
 		// exec.runExperiment(new StarterPacMan(), new StarterGhosts(),numTrials);
-		// System.out.println("CS4096 PACMAN vs Starter GHOSTS");
-		// exec.runExperiment(new CS4096PacMan(),  new StarterGhosts(),numTrials);
+		System.out.println("CS4096 PACMAN vs Starter GHOSTS");
+		exec.runExperiment(new CS4096PacMan(),  new StarterGhosts(),numTrials);
 //		System.out.println("NEAREST PILL PACMAN vs RANDOM GHOSTS");
 //		exec.runExperiment(new NearestPillPacMan(), new StarterGhosts(),numTrials);
 		
@@ -88,7 +88,7 @@ public class Executor
 		
 //		exec.runGameTimed(new MyPacMan(),new AggressiveGhosts(),visual);
 //		exec.runGameTimed(new RandomPacMan(), new AvengersEvolution(evolutionFile),visual);
-//		exec.runGameTimed(new HumanController(new KeyBoardInput()),new StarterGhosts(),visual);	
+		// exec.runGameTimed(new HumanController(new KeyBoardInput()),new StarterGhosts(),visual);	
 		
 		
 		/* run the game in asynchronous mode but advance as soon as both controllers are ready  - this is the mode of the competition.

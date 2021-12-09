@@ -6,7 +6,6 @@ import java.util.EnumMap;
 import java.util.Random;
 import java.util.Map.Entry;
 
-import pacman.controllers.examples.StarterGhosts;
 import pacman.game.Constants.DM;
 import pacman.game.Constants.MOVE;
 import pacman.game.internal.Ghost;
@@ -1785,27 +1784,5 @@ public final class Game {
 			return 0;
 
 		return caches[mazeIndex].getPathDistanceFromA2B(fromNodeIndex, toNodeIndex, lastMoveMade);
-	}
-
-	// NOTE: clone the game before using this function
-	public Game getNextGameState(Game game, int targetNode, StarterGhosts ghostController){
-		game.advanceGame(game.getNextMoveTowardsTarget(game.getPacmanCurrentNodeIndex(), targetNode, DM.PATH), ghostController.getMove());
-		return game;
-	}
-
-	// Method returns a boolean to say whether or not PacMan can get to a specific node without being eaten
-	// Thinking of using this for Power Pill strategy
-	public boolean canPacManGetHere(Game game, int targetNode, StarterGhosts ghostController){
-		Game gameClone = game.copy();
-		while(true){
-			gameClone = getNextGameState(gameClone, targetNode, ghostController);
-			// If PacMan is eaten, raise flag
-			if ((game.getPacmanNumberOfLivesRemaining() > gameClone.getPacmanNumberOfLivesRemaining()) || gameClone.gameOver()){
-				return false;
-			// If pill is eaten, no more computation necessary
-			}else if (gameClone.getPacmanCurrentNodeIndex() == targetNode){
-				return true;
-			}
-		}
 	}
 }
