@@ -73,7 +73,6 @@ public class Executor
 		System.out.println("NEAREST PILL PACMAN vs RANDOM GHOSTS");
 		exec.runExperiment(new NearestPillPacMan(), new StarterGhosts(),numTrials);
 		
-		//Tolerance Test
 		for(int i = 5; i <= 50; i+=5){
 			System.out.println("Tolerance: " + i);
 			exec.runLevelExperiment(new CS4096PacMan(i, 10),  new StarterGhosts(), numTrials, false);

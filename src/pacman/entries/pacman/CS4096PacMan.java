@@ -116,8 +116,9 @@ public class CS4096PacMan extends Controller<MOVE>
 		Integer[] BOTTOM_RIGHT = {111, 113, 121, 122, 123, 124, 125, 126, 127, 130, 131, 134, 135, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 163, 164, 165, 169, 170, 171, 178, 
 			179, 180, 181, 182, 183, 186, 187, 191, 192, 193, 207, 208, 209, 210, 211, 212, 213, 214, 215, 216, 217, 218, 219};
 		ArrayList<Integer[]> routeList;
-		
-		private PillRoutePlanner(Route route){
+
+    
+private PillRoutePlanner(Route route){
 			routeIndex = 0;
 			routeList = new ArrayList<Integer[]>();
 			strategy = route;
@@ -351,12 +352,16 @@ public class CS4096PacMan extends Controller<MOVE>
 				targets.add(powerPills[i]);		
 
 			int[] targetsArray=new int[targets.size()];		//convert from ArrayList to array
-		
 			for(int i=0;i<targetsArray.length;i++)
 				targetsArray[i]=targets.get(i);
 
 			return targetsArray;
 		}
+
+	// PRIYAL AND RISHABH
+	private class EscapeRoutePlanner{
+		private EscapeRoutePlanner(){}
+
 
 		// Returns next move to escape ghosts
 		private MOVE getNextMove(Game game){
@@ -365,12 +370,13 @@ public class CS4096PacMan extends Controller<MOVE>
 
 			// Variables for closest ghost and their distance
 			GHOST closest_ghost = GHOST.values()[0];
+
 			int closest_distance = Integer.MAX_VALUE;
 			GHOST sec_closest_ghost = GHOST.values()[0];
 			int sec_closest_distance = Integer.MAX_VALUE;
 			int[] ghostArray=new int[2];	
 			
-			
+
 
 			// Check all ghosts
 			for(GHOST ghost : GHOST.values())
@@ -381,6 +387,7 @@ public class CS4096PacMan extends Controller<MOVE>
 						closest_ghost = ghost;
 						closest_distance = game.getShortestPathDistance(current,game.getGhostCurrentNodeIndex(ghost));
 					}
+
 			ghostArray[0] = game.getGhostCurrentNodeIndex(closest_ghost);
 			//check for closest pill and confirm that the pill is not in the direction of the ghost
 			int[] powerPills = getNodesOfAvailablePowerPills(game);
@@ -411,6 +418,7 @@ public class CS4096PacMan extends Controller<MOVE>
 			// Return move away from closest ghost
 			return game.getNextMoveAwayFromTarget(current,game.getClosestNodeIndexFromNodeIndex(current,ghostArray,DM.PATH),DM.PATH);
 			
+
 		}
 	}
 }
