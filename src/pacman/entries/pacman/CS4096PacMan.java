@@ -153,7 +153,7 @@ public class CS4096PacMan extends Controller<MOVE>
 					return areaPriority(game);
 				}
 			}
-		}
+		} 
 
 		private MOVE areaPriority(Game game){
 			int[] pills=game.getPillIndices();
@@ -341,7 +341,6 @@ public class CS4096PacMan extends Controller<MOVE>
 
 	// PRIYAL AND RISHABH
 	private class EscapeRoutePlanner{
-<<<<<<< HEAD
 		private int[] getNodesOfAvailablePowerPills(Game game){
 			int[] powerPills=game.getPowerPillIndices();
 			
@@ -358,8 +357,6 @@ public class CS4096PacMan extends Controller<MOVE>
 			return targetsArray;
 		}
 	
-=======
->>>>>>> 4736c6f4545260ded6ee1a3c9cd6d34cf3ac3206
 		private EscapeRoutePlanner(){}
 
 		// Returns next move to escape ghosts
