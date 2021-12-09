@@ -35,7 +35,11 @@ public class CS4096PacMan extends Controller<MOVE>
 		GHOST minGhost=null;		
 		
 		for(GHOST ghost : GHOST.values())
+<<<<<<< Updated upstream
 			if(game.getGhostEdibleTime(ghost)>0)
+=======
+			if(game.getGhostEdibleTime(ghost)>10) //changing value to 10 gave better results
+>>>>>>> Stashed changes
 			{
 				int distance=game.getShortestPathDistance(current,game.getGhostCurrentNodeIndex(ghost));
 				
@@ -53,6 +57,7 @@ public class CS4096PacMan extends Controller<MOVE>
 		int[] pills=game.getPillIndices();
 		int[] powerPills=game.getPowerPillIndices();		
 		
+<<<<<<< Updated upstream
 		ArrayList<Integer> targets=new ArrayList<Integer>();
 		
 		for(int i=0;i<pills.length;i++)					//check which pills are available			
@@ -70,6 +75,263 @@ public class CS4096PacMan extends Controller<MOVE>
 		
 		//return the next direction once the closest target has been identified
 		return game.getNextMoveTowardsTarget(current,game.getClosestNodeIndexFromNodeIndex(current,targetsArray,DM.PATH),DM.PATH);
+=======
+		private PillRoutePlanner(Route route){
+			routeIndex = 0;
+			routeList = new ArrayList<Integer[]>();
+			strategy = route;
+			switch (route){
+				case CORNERS:
+				{
+					routeList.add(BOTTOM_RIGHT);
+					routeList.add(BOTTOM_LEFT);
+					routeList.add(TOP_LEFT);
+					routeList.add(TOP_RIGHT);
+					break;
+				}
+				default:{
+					// Do nothing
+				}
+			}
+		}
+
+		// TODO : Fix this method for game over
+		private MOVE getMoveTowardsPills(Game game){
+			switch (strategy){
+				case BASIC:
+				{
+					return eatClosestPill(game);
+				}
+				case CLOSEST_AWAY:
+				{
+					return eatClosestPillAwayFromGhosts(game);
+				}
+				case CORNERS:
+				default:
+				{
+					return areaPriority(game);
+				}
+			}
+		}
+
+		private MOVE areaPriority(Game game){
+			int[] pills=game.getPillIndices();
+			int[] powerPills=game.getPowerPillIndices();		
+			int current=game.getPacmanCurrentNodeIndex();
+			ArrayList<Integer> targets = new ArrayList<Integer>();
+
+			// Repeat until targets are found
+			while (targets.size() == 0){
+				Integer[] current_section;
+				// If all routes have been cleared, return all pills
+				if(routeIndex == routeList.size()){
+					ArrayList<Integer> convert = new ArrayList<Integer>();
+					for (int i : pills){
+						convert.add((Integer)i);
+					}
+					current_section = convert.toArray(new Integer[convert.size()]);
+				}
+				// Otherwise, get target area
+				else
+				{
+					current_section = routeList.get(routeIndex);
+				}
+				
+				// Add remaining pills to targets
+				for(int i=0; i < current_section.length ; i++){					//check which pills are available
+					if(game.isPillStillAvailable(current_section[i])){
+						targets.add(pills[current_section[i]]);
+					}
+				}	
+				// If area is empty, move to next route
+				if (targets.size() == 0){
+					System.out.println("Moving to next area!");
+					routeIndex++;
+				}
+			}
+									
+			for(int i=0;i<powerPills.length;i++)			//check with power pills are available
+			if(game.isPowerPillStillAvailable(powerPills[i]))
+				targets.add(powerPills[powerPills[i]]);				
+			
+			int[] targetsArray=new int[targets.size()];		//convert from ArrayList to array
+			
+			for(int i=0;i<targetsArray.length;i++)
+				targetsArray[i]=targets.get(i);
+			
+			//return the next direction once the closest target has been identified
+			return game.getNextMoveTowardsTarget(current,game.getClosestNodeIndexFromNodeIndex(current,targetsArray,DM.PATH),DM.PATH);
+		}
+
+		private MOVE eatClosestPill(Game game){
+			int[] pills=game.getPillIndices();
+			int[] powerPills=game.getPowerPillIndices();
+			int current=game.getPacmanCurrentNodeIndex();		
+			
+			ArrayList<Integer> targets=new ArrayList<Integer>();
+			
+			for(int i=0;i<pills.length;i++)					//check which pills are available			
+				if(game.isPillStillAvailable(i))
+					targets.add(pills[i]);
+			
+			for(int i=0;i<powerPills.length;i++)			//check with power pills are available
+				if(game.isPowerPillStillAvailable(i))
+					targets.add(powerPills[i]);				
+			
+			int[] targetsArray=new int[targets.size()];		//convert from ArrayList to array
+			
+			for(int i=0;i<targetsArray.length;i++)
+				targetsArray[i]=targets.get(i);
+			
+			//return the next direction once the closest target has been identified
+			return game.getNextMoveTowardsTarget(current,game.getClosestNodeIndexFromNodeIndex(current,targetsArray,DM.PATH),DM.PATH);
+		}
+
+		// Strategy to aim for pills that maximize distance from ghosts
+		// TODO : incorporate power pill strategy
+		private MOVE eatClosestPillAwayFromGhosts(Game game){
+			int current=game.getPacmanCurrentNodeIndex();		
+
+			// Get all pills on board
+			int[] targetsArray = getNodesOfAvailablePillsAndPowerPills(game);
+			
+			// Narrow down to closest pills within tolerance
+			// TODO : This could be better
+			int[] closestPills = game.getClosestNodeIndexesFromNodeIndexWithTolerance(current,targetsArray,DM.PATH,GHOST_TOLERANCE);
+			
+			// Use this instead to consider all pills - a bit slower and does more stuttering
+			//int[] closestPills = targetsArray;
+
+			StarterGhosts ghostController = new StarterGhosts();
+			ArrayList<GHOST> closeGhostList = new ArrayList<GHOST>();
+
+			// TODO : use Mounikas threat assessment here once done
+			for(GHOST ghost : GHOST.values())
+			{
+				// No threat if ghost is edible or in lair
+				if(game.getGhostEdibleTime(ghost)==0 && game.getGhostLairTime(ghost)==0)
+					// Checks if ghost is closer than the threshold
+					if(game.getShortestPathDistance(current,game.getGhostCurrentNodeIndex(ghost))<MIN_DISTANCE*3)
+						closeGhostList.add(ghost);
+			}
+
+			// If there is only one closest pill or no close ghosts, eat closest pill
+			if ((closestPills.length == 1) || closeGhostList.size() == 0)
+			{
+				return game.getNextMoveTowardsTarget(current,game.getClosestNodeIndexFromNodeIndex(current,targetsArray,DM.PATH),DM.PATH);
+			}
+			// If there are close ghosts, move away from them
+			else
+			{
+				double maxGhostDistance = Double.MIN_VALUE;
+				int bestPillIndex = 0;
+
+				// Play out consequences of chasing closest pills
+				for(int i = 0; i < closestPills.length; i++)
+				{
+					boolean caught = false;
+					// Get copy of the game state
+					Game gameClone = game.copy();
+					int newNode = gameClone.getPacmanCurrentNodeIndex();
+					
+					// Look ahead at consequences for set number of turns
+					for(int j = 0; j < LOOK_AHEAD; j++){
+						gameClone = gameClone.getNextGameState(gameClone, closestPills[i], ghostController);
+						newNode = gameClone.getPacmanCurrentNodeIndex();
+
+						// If PacMan is eaten, raise flag
+						if ((game.getPacmanNumberOfLivesRemaining() > gameClone.getPacmanNumberOfLivesRemaining()) || gameClone.gameOver()){
+							caught = true;
+							break;
+						// If pill is eaten, no more computation necessary
+						}else if (newNode == closestPills[i]){
+							break;
+						}
+					}
+					
+					// If PacMan is eaten, do not consider this move
+					if(caught){
+						continue;
+					}	
+
+					// Get average distance from close ghosts
+					int distanceSum = 0;
+					for(GHOST ghost : closeGhostList)
+					{
+						distanceSum += gameClone.getShortestPathDistance(newNode,gameClone.getGhostCurrentNodeIndex(ghost));
+					}
+					double averageGhostDistance = distanceSum/closeGhostList.size();
+
+					// Find index of move which leads to max distance from ghosts
+					if (averageGhostDistance > maxGhostDistance)
+					{
+						maxGhostDistance = averageGhostDistance;
+						bestPillIndex = i;
+					}
+				}
+
+				return game.getNextMoveTowardsTarget(current,closestPills[bestPillIndex],DM.PATH);
+			}
+		}
+
+		private int[] getNodesOfAvailablePillsAndPowerPills(Game game){
+
+			int[] pills=game.getPillIndices();
+			int[] powerPills=game.getPowerPillIndices();
+			
+			ArrayList<Integer> targets=new ArrayList<Integer>();
+			
+			for(int i=0;i<pills.length;i++)					//check which pills are available			
+				if(game.isPillStillAvailable(i))
+					targets.add(pills[i]);
+			
+			for(int i=0;i<powerPills.length;i++)			//check with power pills are available
+				if(game.isPowerPillStillAvailable(i))
+					targets.add(powerPills[i]);				
+			
+			int[] targetsArray=new int[targets.size()];		//convert from ArrayList to array
+			
+			for(int i=0;i<targetsArray.length;i++)
+				targetsArray[i]=targets.get(i);
+
+			return targetsArray;
+		}
+	}
+
+	// PRIYAL AND RISHABH
+	private class EscapeRoutePlanner{
+		private EscapeRoutePlanner(){}
+
+		// Returns next move to escape ghosts
+		private MOVE getNextMove(Game game){
+			// PacMan's current position
+			int current=game.getPacmanCurrentNodeIndex();
+
+			// Variables for closest ghost and their distance
+			GHOST closest_ghost = GHOST.values()[0];
+			int closest_distance = 999999;
+
+			// Check all ghosts
+			for(GHOST ghost : GHOST.values())
+				// No need to run if ghost is edible or in lair and Check if ghost is closest
+				if(game.getGhostEdibleTime(ghost)==0 && game.getGhostLairTime(ghost)==0 && game.getShortestPathDistance(current,game.getGhostCurrentNodeIndex(ghost))<closest_distance)
+				{
+					closest_ghost = ghost;
+					closest_distance = game.getShortestPathDistance(current,game.getGhostCurrentNodeIndex(ghost));
+					//check if there is a power pill nearby to eat
+					//if the ghost is moving in the opposite direction, no need to run away from it
+					
+				}
+			
+			
+			// check how many ghost are nearby if more than 1 change direction
+			// check for ghost distances around the new place and if suitable then move
+			// can use game.getApproximateNextMoveAwayFromTarget
+			// Return move away from closest ghost
+			return game.getNextMoveAwayFromTarget(game.getPacmanCurrentNodeIndex(),game.getGhostCurrentNodeIndex(closest_ghost),DM.PATH);
+			//not sure if this checks for corners. if it doesn't need to chagne route
+		}
+>>>>>>> Stashed changes
 	}
 }
 
