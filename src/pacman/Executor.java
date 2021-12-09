@@ -52,9 +52,9 @@ public class Executor
 		Executor exec=new Executor();
 		
 		/* run a game in synchronous mode: game waits until controllers respond. */
-		// System.out.println("STARTER PACMAN vs starter GHOSTS");
-		//exec.runGame(new CS4096PacMan(30, 15), new StarterGhosts(), visual,delay);
-		//exec.runGame(new StarterPacMan(), new StarterGhosts(), visual,delay);
+//		System.out.println("STARTER PACMAN vs starter GHOSTS");
+//		exec.runGame(new CS4096PacMan(30, 15), new StarterGhosts(), visual,delay);
+//		exec.runGame(new StarterPacMan(), new StarterGhosts(), visual,delay);
 
 		/* run multiple games in batch mode - good for testing. */
 		
