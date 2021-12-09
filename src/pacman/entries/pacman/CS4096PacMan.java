@@ -322,16 +322,13 @@ public class CS4096PacMan extends Controller<MOVE>
 					//if the ghost is moving in the opposite direction, no need to run away from it
 					
 				}
-			
-			
-			// check how many ghost are nearby if more than 1 change direction
-			// check for ghost distances around the new place and if suitable then move
-			// can use game.getApproximateNextMoveAwayFromTarget
-			// Return move away from closest ghost
+			// check how many ghost are nearby if more than 1 change direction 
+			// check for ghost distances around the new place and if suitable then move 
+			// can use game.getApproximateNextMoveAwayFromTarget 
+			// Return move away from closest ghost 
 			return game.getNextMoveAwayFromTarget(game.getPacmanCurrentNodeIndex(),game.getGhostCurrentNodeIndex(closest_ghost),DM.PATH);
 			//not sure if this checks for corners. if it doesn't need to chagne route
 		}
->>>>>>> Stashed changes
 	}
 }
 
