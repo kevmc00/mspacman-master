@@ -190,9 +190,9 @@ public class CS4096PacMan extends Controller<MOVE>
 					minPowerPillDistance = game.getShortestPathDistance(current, pill);
 				}
 			}
-//			if (game.getShortestPathDistance(closestAccessiblePowerPill, ghostArray[0])<closest_distance) {
-//				return game.getNextMoveAwayFromTarget(current,closestAccessiblePowerPill,DM.PATH);
-//			}
+			if (game.getShortestPathDistance(closestAccessiblePowerPill, ghostArray[0])<closest_distance) {
+				return game.getNextMoveTowardsTarget(current,closestAccessiblePowerPill,DM.PATH);
+			}
 					
 			for (GHOST ghost : GHOST.values())
 				if (ghost != closest_ghost) {
