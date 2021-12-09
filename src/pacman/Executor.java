@@ -47,13 +47,14 @@ public class Executor
 	{
 		int delay=10;
 		boolean visual=true;
-		int numTrials=20;
+		int numTrials=100;
 		
 		Executor exec=new Executor();
 		
 		/* run a game in synchronous mode: game waits until controllers respond. */
-		System.out.println("STARTER PACMAN vs starter GHOSTS");
-		//exec.runGame(new CS4096PacMan(), new StarterGhosts(), visual,delay);
+		// System.out.println("STARTER PACMAN vs starter GHOSTS");
+		exec.runGame(new CS4096PacMan(30, 15), new StarterGhosts(), visual,delay);
+		//exec.runGame(new StarterPacMan(), new StarterGhosts(), visual,delay);
 
 		/* run multiple games in batch mode - good for testing. */
 		
@@ -65,21 +66,29 @@ public class Executor
 //		exec.runExperiment(new NearestPillPacMan(), new Legacy2TheReckoning(),numTrials);
 //		
 //		
-//		System.out.println("STARTER PACMAN vs starter GHOSTS");
-//		exec.runExperiment(new StarterPacMan(), new StarterGhosts(),numTrials);
-//		System.out.println("RANDOM PACMAN vs RANDOM GHOSTS");
-//		exec.runExperiment(new RandomPacMan(),  new StarterGhosts(),numTrials);
+		// System.out.println("STARTER PACMAN vs starter GHOSTS");
+		// exec.runExperiment(new StarterPacMan(), new StarterGhosts(),numTrials);
+		// System.out.println("CS4096 PACMAN vs Starter GHOSTS");
+		// exec.runExperiment(new CS4096PacMan(),  new StarterGhosts(),numTrials);
 //		System.out.println("NEAREST PILL PACMAN vs RANDOM GHOSTS");
 //		exec.runExperiment(new NearestPillPacMan(), new StarterGhosts(),numTrials);
 		
-
+		// Tolerance Test
+		// for(int i = 5; i <= 50; i+=5){
+		// 	System.out.println("Tolerance: " + i);
+		// 	exec.runLevelExperiment(new CS4096PacMan(i, 10),  new StarterGhosts(), numTrials, false);
+		// }
   		 
-		
+		// Look Ahead Test
+		// for(int i = 1; i <= 30; i+=1){
+		// 	System.out.println("Look Ahead: " + i);
+		// 	exec.runLevelExperiment(new CS4096PacMan(30, i),  new StarterGhosts(), numTrials, false);
+		// }
 		/* run the game in asynchronous mode. */
 		
 //		exec.runGameTimed(new MyPacMan(),new AggressiveGhosts(),visual);
 //		exec.runGameTimed(new RandomPacMan(), new AvengersEvolution(evolutionFile),visual);
-		exec.runGameTimed(new HumanController(new KeyBoardInput()),new StarterGhosts(),visual);	
+//		exec.runGameTimed(new HumanController(new KeyBoardInput()),new StarterGhosts(),visual);	
 		
 		
 		/* run the game in asynchronous mode but advance as soon as both controllers are ready  - this is the mode of the competition.
@@ -111,6 +120,7 @@ public class Executor
     public void runExperiment(Controller<MOVE> pacManController,Controller<EnumMap<GHOST,MOVE>> ghostController,int trials)
     {
     	double avgScore=0;
+		double avgLevel=0;
     	
     	Random rnd=new Random(0);
 		Game game;
@@ -126,10 +136,71 @@ public class Executor
 			}
 			
 			avgScore+=game.getScore();
-			System.out.println(i+"\t"+game.getScore());
+			avgLevel+=game.getCurrentLevel();
+			System.out.println(i+"\t"+game.getScore()+"\t Lvl " + game.getCurrentLevel());
 		}
 		
-		System.out.println(avgScore/trials);
+		System.out.println("Average Score: " + avgScore/trials);
+		System.out.println("Average Level: " + avgLevel/trials);
+    }
+
+	public double runScoreExperiment(Controller<MOVE> pacManController,Controller<EnumMap<GHOST,MOVE>> ghostController,int trials)
+    {
+    	double avgScore=0;
+		double avgLevel=0;
+    	
+    	Random rnd=new Random(0);
+		Game game;
+		
+		for(int i=0;i<trials;i++)
+		{
+			game=new Game(rnd.nextLong());
+			
+			while(!game.gameOver())
+			{
+		        game.advanceGame(pacManController.getMove(game.copy(),System.currentTimeMillis()+DELAY),
+		        		ghostController.getMove(game.copy(),System.currentTimeMillis()+DELAY));
+			}
+			
+			avgScore+=game.getScore();
+			avgLevel+=game.getCurrentLevel();
+			System.out.println(i+"\t"+game.getScore()+"\t Lvl " + game.getCurrentLevel());
+		}
+		
+		System.out.println("Average Score: " + avgScore/trials);
+		System.out.println("Average Level: " + avgLevel/trials);
+
+		return avgScore;
+    }
+
+	public double runLevelExperiment(Controller<MOVE> pacManController,Controller<EnumMap<GHOST,MOVE>> ghostController,int trials, boolean verbose)
+    {
+    	double avgScore=0;
+		double avgLevel=0;
+    	
+    	Random rnd=new Random(0);
+		Game game;
+		
+		for(int i=0;i<trials;i++)
+		{
+			game=new Game(rnd.nextLong());
+			
+			while(!game.gameOver())
+			{
+		        game.advanceGame(pacManController.getMove(game.copy(),System.currentTimeMillis()+DELAY),
+		        		ghostController.getMove(game.copy(),System.currentTimeMillis()+DELAY));
+			}
+			
+			avgScore+=game.getScore();
+			avgLevel+=game.getCurrentLevel();
+			if(verbose)
+				System.out.println(i+"\t"+game.getScore()+"\t Lvl " + game.getCurrentLevel());
+		}
+		
+		System.out.println("Average Score: " + avgScore/trials);
+		System.out.println("Average Level: " + avgLevel/trials);
+
+		return avgLevel;
     }
 	
 	/**

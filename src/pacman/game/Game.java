@@ -1,9 +1,12 @@
 package pacman.game;
 
+import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.EnumMap;
 import java.util.Random;
 import java.util.Map.Entry;
+
+import pacman.controllers.examples.StarterGhosts;
 import pacman.game.Constants.DM;
 import pacman.game.Constants.MOVE;
 import pacman.game.internal.Ghost;
@@ -1386,6 +1389,68 @@ public final class Game {
 		return target;
 	}
 
+	public int[] getClosestNodeIndexesFromNodeIndex(int fromNodeIndex, int[] targetNodeIndices,
+	DM distanceMeasure) 
+	{
+		double minDistance = Integer.MAX_VALUE;
+		ArrayList<Integer> targetsList = new ArrayList<Integer>();
+
+		for (int i = 0; i < targetNodeIndices.length; i++) {
+			double distance = 0;
+
+			distance = getDistance(targetNodeIndices[i], fromNodeIndex, distanceMeasure);
+
+			if (distance < minDistance) {
+				minDistance = distance;
+				targetsList.clear();
+				targetsList.add(targetNodeIndices[i]);
+			}
+			else if (distance == minDistance)
+			{
+				targetsList.add(targetNodeIndices[i]);
+			}
+		}
+
+		int[] targets = new int[targetsList.size()];
+		for(int i=0;i<targets.length;i++)
+			targets[i]=targetsList.get(i);
+
+		return targets;
+	}
+
+	public int[] getClosestNodeIndexesFromNodeIndexWithTolerance(int fromNodeIndex, int[] targetNodeIndices,
+	DM distanceMeasure, int tolerance) 
+	{
+		double minDistance = Integer.MAX_VALUE;
+		ArrayList<Integer> targetsList = new ArrayList<Integer>();
+
+		for (int i = 0; i < targetNodeIndices.length; i++) {
+			double distance = 0;
+
+			distance = getDistance(targetNodeIndices[i], fromNodeIndex, distanceMeasure);
+
+			if (distance < minDistance) {
+				minDistance = distance;
+				for(int j = 0; j < targetsList.size(); j++){
+					if(getDistance(targetsList.get(j), fromNodeIndex, distanceMeasure) > minDistance + tolerance){
+						targetsList.remove(j);
+					}
+				}
+				targetsList.add(targetNodeIndices[i]);
+			}
+			else if (distance <= minDistance + tolerance)
+			{
+				targetsList.add(targetNodeIndices[i]);
+			}
+		}
+
+		int[] targets = new int[targetsList.size()];
+		for(int i=0;i<targets.length;i++)
+			targets[i]=targetsList.get(i);
+
+		return targets;
+	}
+
 	/**
 	 * Gets the farthest node index from node index.
 	 * 
@@ -1720,5 +1785,27 @@ public final class Game {
 			return 0;
 
 		return caches[mazeIndex].getPathDistanceFromA2B(fromNodeIndex, toNodeIndex, lastMoveMade);
+	}
+
+	// NOTE: clone the game before using this function
+	public Game getNextGameState(Game game, int targetNode, StarterGhosts ghostController){
+		game.advanceGame(game.getNextMoveTowardsTarget(game.getPacmanCurrentNodeIndex(), targetNode, DM.PATH), ghostController.getMove());
+		return game;
+	}
+
+	// Method returns a boolean to say whether or not PacMan can get to a specific node without being eaten
+	// Thinking of using this for Power Pill strategy
+	public boolean canPacManGetHere(Game game, int targetNode, StarterGhosts ghostController){
+		Game gameClone = game.copy();
+		while(true){
+			gameClone = getNextGameState(gameClone, targetNode, ghostController);
+			// If PacMan is eaten, raise flag
+			if ((game.getPacmanNumberOfLivesRemaining() > gameClone.getPacmanNumberOfLivesRemaining()) || gameClone.gameOver()){
+				return false;
+			// If pill is eaten, no more computation necessary
+			}else if (gameClone.getPacmanCurrentNodeIndex() == targetNode){
+				return true;
+			}
+		}
 	}
 }
