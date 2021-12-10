@@ -1,8 +1,6 @@
 package pacman;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -12,7 +10,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.Random;
-import java.util.List;
 
 import pacman.controllers.Controller;
 import pacman.controllers.HumanController;
@@ -124,9 +121,6 @@ public class Executor
     {
     	double avgScore=0;
 		double avgLevel=0;
-		List<String> score_list = new ArrayList<String>();
-		List<String> level_list = new ArrayList<String>();
-		
     	
     	Random rnd=new Random(0);
 		Game game;
@@ -143,28 +137,11 @@ public class Executor
 			
 			avgScore+=game.getScore();
 			avgLevel+=game.getCurrentLevel();
-			score_list.add(i,Integer.toString(game.getScore()));
-			level_list.add(i,Integer.toString(game.getCurrentLevel()));
-			System.out.println(i+"\t"+game.getScore()+"\t Lvl " + game.getCurrentLevel());
+			//System.out.println(i+"\t"+game.getScore()+"\t Lvl " + game.getCurrentLevel());
 		}
 		
 		System.out.println("Average Score: " + avgScore/trials);
 		System.out.println("Average Level: " + avgLevel/trials);
-		try (PrintWriter writer = new PrintWriter(new File("test.csv"))) {
-			StringBuilder sb = new StringBuilder();
-			for (int j=0;j<trials;j++)
-			{
-				sb.append(score_list.get(j));
-				sb.append(',');
-				sb.append(level_list.get(j));
-				sb.append('\n');
-			}
-			writer.write(sb.toString());
-	        writer.close();
-		 }
-		 catch (FileNotFoundException e) {
-			 System.out.println(e.getMessage());
-		 }
     }
 
 	public double runScoreExperiment(Controller<MOVE> pacManController,Controller<EnumMap<GHOST,MOVE>> ghostController,int trials)
