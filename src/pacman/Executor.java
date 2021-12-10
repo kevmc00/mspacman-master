@@ -1,7 +1,10 @@
 package pacman;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -54,8 +57,12 @@ public class Executor
 		
 		/* run a game in synchronous mode: game waits until controllers respond. */
 		// System.out.println("STARTER PACMAN vs starter GHOSTS");
-		// exec.runGame(new CS4096PacMan(30, 15), new StarterGhosts(), visual,delay);
-		// exec.runGame(new StarterPacMan(), new StarterGhosts(), visual,delay);
+		int PILL_DISTANCE_TOLERANCE = 30;
+		int LOOK_AHEAD = 15;
+		int CLOSE_GHOST_DISTANCE = 30;
+		int MIN_GHOST_EDIBLE_TIME = 5;
+		exec.runGame(new CS4096PacMan(PILL_DISTANCE_TOLERANCE, LOOK_AHEAD, CLOSE_GHOST_DISTANCE, MIN_GHOST_EDIBLE_TIME), new StarterGhosts(), visual,delay);
+		exec.runGame(new StarterPacMan(), new StarterGhosts(), visual,delay);
 
 		/* run multiple games in batch mode - good for testing. */
 		
@@ -67,10 +74,12 @@ public class Executor
 		// exec.runExperiment(new NearestPillPacMan(), new Legacy2TheReckoning(),numTrials);
 //		
 //		
-		// System.out.println("STARTER PACMAN vs starter GHOSTS");
-		// exec.runExperiment(new StarterPacMan(), new StarterGhosts(),numTrials);
 		System.out.println("CS4096 PACMAN vs Starter GHOSTS");
-		exec.runExperiment(new CS4096PacMan(),  new StarterGhosts(),numTrials);
+		List<Integer> cs4096Scores = exec.runExperiment(new CS4096PacMan(),  new StarterGhosts(),numTrials);
+		System.out.println("STARTER PACMAN vs starter GHOSTS");
+		List<Integer> starterScores = exec.runExperiment(new StarterPacMan(), new StarterGhosts(),numTrials);
+		exec.writeScoresToFile(cs4096Scores, starterScores);
+
 //		System.out.println("NEAREST PILL PACMAN vs RANDOM GHOSTS");
 //		exec.runExperiment(new NearestPillPacMan(), new StarterGhosts(),numTrials);
 		
@@ -167,7 +176,7 @@ public class Executor
      * @param ghostController The Ghosts controller
      * @param trials The number of trials to be executed
      */
-    public void runExperiment(Controller<MOVE> pacManController,Controller<EnumMap<GHOST,MOVE>> ghostController,int trials)
+    public List<Integer> runExperiment(Controller<MOVE> pacManController,Controller<EnumMap<GHOST,MOVE>> ghostController,int trials)
     {
 		List<Integer> scoreslist = new ArrayList<Integer>();//(declare on top for accessing it as global variable)
     	
@@ -201,7 +210,40 @@ public class Executor
 		System.out.println("variance of the scores is :"+ variance);
 		double stdDev = stdDeviation(list);
 		System.out.println("stdDev of the scores is :"+ stdDev);
+		System.out.println();
+
+		return scoreslist;
     }
+
+	public void writeScoresToFile(List<Integer> test, List<Integer> control){
+
+		PrintWriter writer = null;
+		try{
+			writer = new PrintWriter(new File("test.csv"));
+			StringBuilder sb = new StringBuilder();
+			for (int j=0;j<test.size();j++)
+			{
+				sb.append(test.get(j));
+				sb.append(',');
+				sb.append(control.get(j));
+				sb.append('\n');
+			}
+			writer.write(sb.toString());
+	        writer.close();
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		finally{
+			if (writer != null){
+				try{
+					writer.close();
+				}
+				catch (Exception e){
+					e.printStackTrace();
+				}
+			}
+		}
+	}
 
 	public double runScoreExperiment(Controller<MOVE> pacManController,Controller<EnumMap<GHOST,MOVE>> ghostController,int trials)
     {

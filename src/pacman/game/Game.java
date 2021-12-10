@@ -1388,68 +1388,6 @@ public final class Game {
 		return target;
 	}
 
-	public int[] getClosestNodeIndexesFromNodeIndex(int fromNodeIndex, int[] targetNodeIndices,
-	DM distanceMeasure) 
-	{
-		double minDistance = Integer.MAX_VALUE;
-		ArrayList<Integer> targetsList = new ArrayList<Integer>();
-
-		for (int i = 0; i < targetNodeIndices.length; i++) {
-			double distance = 0;
-
-			distance = getDistance(targetNodeIndices[i], fromNodeIndex, distanceMeasure);
-
-			if (distance < minDistance) {
-				minDistance = distance;
-				targetsList.clear();
-				targetsList.add(targetNodeIndices[i]);
-			}
-			else if (distance == minDistance)
-			{
-				targetsList.add(targetNodeIndices[i]);
-			}
-		}
-
-		int[] targets = new int[targetsList.size()];
-		for(int i=0;i<targets.length;i++)
-			targets[i]=targetsList.get(i);
-
-		return targets;
-	}
-
-	public int[] getClosestNodeIndexesFromNodeIndexWithTolerance(int fromNodeIndex, int[] targetNodeIndices,
-	DM distanceMeasure, int tolerance) 
-	{
-		double minDistance = Integer.MAX_VALUE;
-		ArrayList<Integer> targetsList = new ArrayList<Integer>();
-
-		for (int i = 0; i < targetNodeIndices.length; i++) {
-			double distance = 0;
-
-			distance = getDistance(targetNodeIndices[i], fromNodeIndex, distanceMeasure);
-
-			if (distance < minDistance) {
-				minDistance = distance;
-				for(int j = 0; j < targetsList.size(); j++){
-					if(getDistance(targetsList.get(j), fromNodeIndex, distanceMeasure) > minDistance + tolerance){
-						targetsList.remove(j);
-					}
-				}
-				targetsList.add(targetNodeIndices[i]);
-			}
-			else if (distance <= minDistance + tolerance)
-			{
-				targetsList.add(targetNodeIndices[i]);
-			}
-		}
-
-		int[] targets = new int[targetsList.size()];
-		for(int i=0;i<targets.length;i++)
-			targets[i]=targetsList.get(i);
-
-		return targets;
-	}
-
 	/**
 	 * Gets the farthest node index from node index.
 	 * 
