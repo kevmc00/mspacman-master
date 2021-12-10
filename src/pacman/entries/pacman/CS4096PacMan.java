@@ -355,25 +355,6 @@ public class CS4096PacMan extends Controller<MOVE>
 					bestNodeIndex = i;
 				}
 
-				// Get closest ghost distance
-				// int ghostDistance;
-				// int closestDistance = Integer.MAX_VALUE;
-
-				// for(GHOST ghost : GHOST.values()){
-				// 	ghostDistance = gameClone.getShortestPathDistance(newNode,gameClone.getGhostCurrentNodeIndex(ghost));
-				// 	if(ghostDistance < closestDistance)
-				// 	{
-				// 		closestDistance = ghostDistance;
-				// 	}
-				// }
-
-				// if ((closestDistance > maxGhostDistance) 
-				// || ((closestDistance == maxGhostDistance) && (game.getPacmanLastMoveMade() == game.getNextMoveTowardsTarget(game.getPacmanCurrentNodeIndex(), targetNodes[i], DM.PATH))))
-				// {
-				// 	maxGhostDistance = closestDistance;
-				// 	bestNodeIndex = i;
-				// }
-
 			}
 			return targetNodes[bestNodeIndex];
 		}
@@ -409,7 +390,6 @@ public class CS4096PacMan extends Controller<MOVE>
 		}
 
 		// Method returns a boolean to say whether or not PacMan can get to a specific node without being eaten
-		// Thinking of using this for Power Pill strategy
 		public static boolean canPacManGetHere(Game game, int targetNode, AggressiveGhosts ghostController){
 			Game gameClone = game.copy();
 			while(true){
