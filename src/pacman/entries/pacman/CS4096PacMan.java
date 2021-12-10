@@ -20,9 +20,10 @@ import static pacman.game.Constants.*;
  */
 public class CS4096PacMan extends Controller<MOVE>
 {	
-	private static final int MIN_DISTANCE=20;	//if a ghost is this close, run away
-	private int GHOST_TOLERANCE;
+	private int PILL_DISTANCE_TOLERANCE;
 	private int LOOK_AHEAD;
+	private int CLOSE_GHOST_DISTANCE;
+	private int MIN_GHOST_EDIBLE_TIME;
 
 	private PillRoutePlanner pillRoute;
 	private GhostHunter ghostHunter;
@@ -32,25 +33,28 @@ public class CS4096PacMan extends Controller<MOVE>
 		this.pillRoute = new PillRoutePlanner();
 		this.escapeRoutePlanner = new EscapeRoutePlanner();
 		this.ghostHunter = new GhostHunter();
-		this.GHOST_TOLERANCE = 30;
+		this.PILL_DISTANCE_TOLERANCE = 30;
 		this.LOOK_AHEAD = 15;
+		this.CLOSE_GHOST_DISTANCE = 30;
+		this.MIN_GHOST_EDIBLE_TIME = 5;
 	}
 
-	public CS4096PacMan(int tolerance, int lookAhead){
+	public CS4096PacMan(int tolerance, int lookAhead, int closeGhostDistance, int minEdibleGhostTime){
 		this.pillRoute = new PillRoutePlanner();
 		this.escapeRoutePlanner = new EscapeRoutePlanner();
 		this.ghostHunter = new GhostHunter();
-		this.GHOST_TOLERANCE = tolerance;
+		this.PILL_DISTANCE_TOLERANCE = tolerance;
 		this.LOOK_AHEAD = lookAhead;
+		this.CLOSE_GHOST_DISTANCE = closeGhostDistance;
+		this.MIN_GHOST_EDIBLE_TIME = minEdibleGhostTime;
 	}
 	
 	public MOVE getMove(Game game,long timeDue)
 	{			
 		MOVE nextMove;
 
-		// TODO : properly allow for parameter tuning in constructor
-		ArrayList<GHOST> edibleGhosts = HELPER.getEdibleGhosts(game, 10);
-		ArrayList<GHOST> closeGhosts = HELPER.getCloseGhosts(game, 45);
+		ArrayList<GHOST> edibleGhosts = HELPER.getEdibleGhosts(game, MIN_GHOST_EDIBLE_TIME);
+		ArrayList<GHOST> closeGhosts = HELPER.getCloseGhosts(game, CLOSE_GHOST_DISTANCE);
 
 		// PLAN A : EAT GHOSTS
 		// Criteria: edible ghosts on board
@@ -113,8 +117,7 @@ public class CS4096PacMan extends Controller<MOVE>
 			int[] targetsArray = HELPER.getNodesOfAvailablePillsAndPowerPills(game);
 
 			// Narrow down to closest pills within tolerance
-			// TODO : Move these methods to helper
-			int[] closestPills = game.getClosestNodeIndexesFromNodeIndexWithTolerance(game.getPacmanCurrentNodeIndex(),targetsArray,DM.PATH, GHOST_TOLERANCE);
+			int[] closestPills = HELPER.getClosestNodeIndexesFromNodeIndexWithTolerance(game, game.getPacmanCurrentNodeIndex(),targetsArray,DM.PATH, PILL_DISTANCE_TOLERANCE);
 			return game.getNextMoveTowardsTarget(game.getPacmanCurrentNodeIndex(), HELPER.getSafestTargetNode(game, closestPills, closeGhostList, LOOK_AHEAD),DM.PATH);
 		}
 
@@ -419,6 +422,68 @@ public class CS4096PacMan extends Controller<MOVE>
 					return true;
 				}
 			}
+		}
+
+		public static int[] getClosestNodeIndexesFromNodeIndex(Game game, int fromNodeIndex, int[] targetNodeIndices,
+		DM distanceMeasure) 
+		{
+			double minDistance = Integer.MAX_VALUE;
+			ArrayList<Integer> targetsList = new ArrayList<Integer>();
+	
+			for (int i = 0; i < targetNodeIndices.length; i++) {
+				double distance = 0;
+	
+				distance = game.getDistance(targetNodeIndices[i], fromNodeIndex, distanceMeasure);
+	
+				if (distance < minDistance) {
+					minDistance = distance;
+					targetsList.clear();
+					targetsList.add(targetNodeIndices[i]);
+				}
+				else if (distance == minDistance)
+				{
+					targetsList.add(targetNodeIndices[i]);
+				}
+			}
+	
+			int[] targets = new int[targetsList.size()];
+			for(int i=0;i<targets.length;i++)
+				targets[i]=targetsList.get(i);
+	
+			return targets;
+		}
+	
+		public static int[] getClosestNodeIndexesFromNodeIndexWithTolerance(Game game, int fromNodeIndex, int[] targetNodeIndices,
+		DM distanceMeasure, int tolerance) 
+		{
+			double minDistance = Integer.MAX_VALUE;
+			ArrayList<Integer> targetsList = new ArrayList<Integer>();
+	
+			for (int i = 0; i < targetNodeIndices.length; i++) {
+				double distance = 0;
+	
+				distance = game.getDistance(targetNodeIndices[i], fromNodeIndex, distanceMeasure);
+	
+				if (distance < minDistance) {
+					minDistance = distance;
+					for(int j = 0; j < targetsList.size(); j++){
+						if(game.getDistance(targetsList.get(j), fromNodeIndex, distanceMeasure) > minDistance + tolerance){
+							targetsList.remove(j);
+						}
+					}
+					targetsList.add(targetNodeIndices[i]);
+				}
+				else if (distance <= minDistance + tolerance)
+				{
+					targetsList.add(targetNodeIndices[i]);
+				}
+			}
+	
+			int[] targets = new int[targetsList.size()];
+			for(int i=0;i<targets.length;i++)
+				targets[i]=targetsList.get(i);
+	
+			return targets;
 		}
 	}
 }
